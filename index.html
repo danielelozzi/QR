@@ -1,0 +1,257 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Generatore QR Code Avanzato</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+    <style>
+        body { 
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; 
+            display: flex; 
+            flex-direction: column; 
+            align-items: center; 
+            padding: 20px; 
+            background-color: #e9efff; 
+            color: #333;
+        }
+        .container { 
+            background: white; 
+            padding: 30px; 
+            border-radius: 12px; 
+            box-shadow: 0 8px 20px rgba(0,0,0,0.1); 
+            text-align: center; 
+            max-width: 500px;
+            width: 90%;
+            margin-bottom: 30px;
+        }
+        h2 { 
+            color: #2c3e50; 
+            margin-bottom: 25px; 
+        }
+        label { 
+            display: block; 
+            text-align: left; 
+            margin-bottom: 8px; 
+            font-weight: bold; 
+            color: #555; 
+        }
+        input[type="text"], input[type="color"], input[type="range"] { 
+            padding: 12px; 
+            width: calc(100% - 24px); 
+            border: 1px solid #ccddee; 
+            border-radius: 6px; 
+            margin-bottom: 20px; 
+            box-sizing: border-box;
+            font-size: 1rem;
+        }
+        input[type="color"] {
+            width: 100px; /* Larghezza fissa per il selettore colore */
+            vertical-align: middle;
+            height: 40px;
+            padding: 5px;
+        }
+        .input-group {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 20px;
+        }
+        .input-group label {
+            margin-bottom: 0;
+            flex-basis: 120px; /* Larghezza fissa per le etichette dei colori */
+            text-align: left;
+        }
+        .slider-group {
+            margin-bottom: 20px;
+            text-align: left;
+        }
+        .slider-group span {
+            margin-left: 10px;
+            font-weight: normal;
+            color: #777;
+        }
+
+        button { 
+            padding: 12px 25px; 
+            cursor: pointer; 
+            background-color: #007bff; 
+            color: white; 
+            border: none; 
+            border-radius: 6px; 
+            margin: 8px; 
+            font-size: 1rem;
+            transition: background-color 0.3s ease;
+        }
+        button:hover { 
+            background-color: #0056b3; 
+        }
+        #generate-btn {
+            background-color: #28a745;
+        }
+        #generate-btn:hover {
+            background-color: #218838;
+        }
+        #download-btn { 
+            display: none; 
+            background-color: #6c757d; 
+        }
+        #download-btn:hover { 
+            background-color: #5a6268; 
+        }
+        #qrcode-container { 
+            margin-top: 25px; 
+            display: flex; 
+            justify-content: center; 
+            border: 1px solid #eee;
+            padding: 10px;
+            border-radius: 8px;
+            background-color: #fcfcfc;
+        }
+        #qrcode {
+            /* QRCode.js crea un canvas qui */
+        }
+        footer {
+            margin-top: 40px;
+            color: #888;
+            font-size: 0.9rem;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <h2>Generatore QR Code Avanzato</h2>
+
+        <label for="text-input">Contenuto (URL o Testo):</label>
+        <input type="text" id="text-input" value="https://github.com/danielelozzi" placeholder="Inserisci URL o testo">
+
+        <div class="input-group">
+            <label for="fg-color">Colore del QR:</label>
+            <input type="color" id="fg-color" value="#000000">
+        </div>
+        
+        <div class="input-group">
+            <label for="bg-color">Colore Sfondo:</label>
+            <input type="color" id="bg-color" value="#ffffff">
+        </div>
+
+        <div class="slider-group">
+            <label for="size-input">Dimensione (pixel):</label>
+            <input type="range" id="size-input" min="100" max="500" value="256" oninput="document.getElementById('size-value').innerText = this.value + 'px'">
+            <span id="size-value">256px</span>
+        </div>
+
+        <div class="slider-group">
+            <label for="border-input">Bordo Bianco (moduli):</label>
+            <input type="range" id="border-input" min="0" max="10" value="4" oninput="document.getElementById('border-value').innerText = this.value + ' moduli'">
+            <span id="border-value">4 moduli</span>
+        </div>
+
+        <label for="signature-input">Firma (es. tuo GitHub Username):</label>
+        <input type="text" id="signature-input" value="danielelozzi" placeholder="Opzionale: aggiungi una firma">
+
+        <button id="generate-btn" onclick="generateQR()">Genera QR Code</button>
+        <button id="download-btn" onclick="downloadQR()">Scarica Immagine</button>
+        
+        <div id="qrcode-container">
+            </div>
+    </div>
+
+    <footer>
+        <p>&copy; 2023 Generatore QR Code. Implementato con <a href="https://github.com/danielelozzi" target="_blank">danielelozzi</a></p>
+    </footer>
+
+    <script>
+        let qrcodeInstance = null; // Manteniamo un'istanza per poterla distruggere e ricreare
+
+        // Funzione per generare il QR Code
+        function generateQR() {
+            const text = document.getElementById("text-input").value;
+            const fgColor = document.getElementById("fg-color").value;
+            const bgColor = document.getElementById("bg-color").value;
+            const size = parseInt(document.getElementById("size-input").value);
+            const border = parseInt(document.getElementById("border-input").value);
+            const signature = document.getElementById("signature-input").value;
+
+            if (text.trim() === "") {
+                alert("Per favore, inserisci un testo o un URL per generare il QR Code.");
+                return;
+            }
+
+            // Pulisce il container prima di generare un nuovo QR
+            const qrcodeContainer = document.getElementById("qrcode-container");
+            qrcodeContainer.innerHTML = ''; 
+            
+            // Crea un nuovo div per il QR, altrimenti QRCode.js non funziona bene se riusiamo lo stesso div
+            const newQrDiv = document.createElement('div');
+            newQrDiv.id = 'qrcode';
+            qrcodeContainer.appendChild(newQrDiv);
+
+            // Inizializza o re-inizializza QRCode.js
+            qrcodeInstance = new QRCode(newQrDiv, {
+                text: text,
+                width: size,
+                height: size,
+                colorDark: fgColor,
+                colorLight: bgColor,
+                correctLevel: QRCode.CorrectLevel.H // Alto livello di correzione errore per la firma
+            });
+
+            // Aggiunge la firma dopo che il QR è stato generato sul canvas
+            setTimeout(() => {
+                addSignatureToQR(signature, size, fgColor, bgColor);
+                document.getElementById("download-btn").style.display = "inline-block";
+            }, 50); // Piccolo ritardo per assicurare che il canvas sia pronto
+        }
+
+        // Funzione per aggiungere la firma al canvas del QR Code
+        function addSignatureToQR(signatureText, qrSize, fgColor, bgColor) {
+            const canvas = document.querySelector("#qrcode canvas");
+            if (!canvas) return;
+
+            const ctx = canvas.getContext("2d");
+
+            if (signatureText) {
+                const fontSize = qrSize * 0.05; // Dimensione del font relativa alla dimensione del QR
+                ctx.font = `${fontSize}px Arial`;
+                ctx.textAlign = "center";
+                ctx.fillStyle = fgColor; // Colore del testo come il colore del QR
+
+                const textMetrics = ctx.measureText(signatureText);
+                const textWidth = textMetrics.width;
+
+                // Calcola la posizione per centrare la firma in basso
+                const x = qrSize / 2;
+                const y = qrSize - (fontSize / 2) - (qrSize * 0.02); // Poco sopra il bordo inferiore
+
+                // Disegna uno sfondo rettangolare per la firma (opzionale, migliora leggibilità)
+                const padding = 5;
+                ctx.fillStyle = bgColor; // Sfondo del testo come il colore di sfondo del QR
+                ctx.fillRect(x - textWidth / 2 - padding, y - fontSize - padding, textWidth + 2 * padding, fontSize + 2 * padding);
+                
+                ctx.fillStyle = fgColor; // Ritorna al colore del testo
+                ctx.fillText(signatureText, x, y);
+            }
+        }
+
+        // Funzione per scaricare il QR Code
+        function downloadQR() {
+            const canvas = document.querySelector("#qrcode canvas");
+            if (canvas) {
+                const link = document.createElement("a");
+                link.href = canvas.toDataURL("image/png");
+                link.download = "qrcode_generato.png";
+                link.click();
+            } else {
+                alert("Nessun QR Code da scaricare. Generalo prima!");
+            }
+        }
+
+        // Genera un QR code iniziale al caricamento della pagina
+        document.addEventListener('DOMContentLoaded', () => {
+            generateQR();
+        });
+    </script>
+</body>
+</html>
