@@ -25,7 +25,6 @@ A lightweight, browser-based tool to generate highly customizable QR codes. This
 2.  **Customize Appearance:**
     *   Select your preferred **QR Color** and **Background Color**.
     *   Use the sliders to adjust the **Size** and **Border**.
-3.  **Add a Signature (Optional):** Enter text in the "Signature" field to overlay a small label at the bottom of the QR code.
 4.  **Generate:** Click the **"Generate QR Code"** button to refresh the preview.
 5.  **Download:** Once satisfied, click **"Download Image"** to save the result as `qrcode_generato.png`.
 

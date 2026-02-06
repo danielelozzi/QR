@@ -148,9 +148,6 @@
             <span id="border-value">4 moduli</span>
         </div>
 
-        <label for="signature-input">Firma (es. tuo GitHub Username):</label>
-        <input type="text" id="signature-input" value="danielelozzi" placeholder="Opzionale: aggiungi una firma">
-
         <button id="generate-btn" onclick="generateQR()">Genera QR Code</button>
         <button id="download-btn" onclick="downloadQR()">Scarica Immagine</button>
         
@@ -159,7 +156,7 @@
     </div>
 
     <footer>
-        <p>&copy; 2023 Generatore QR Code. Implementato con <a href="https://github.com/danielelozzi" target="_blank">danielelozzi</a></p>
+        <p>&copy; Generatore QR Code. Implementato con <a href="https://github.com/danielelozzi" target="_blank">danielelozzi</a></p>
     </footer>
 
     <script>
@@ -172,7 +169,6 @@
             const bgColor = document.getElementById("bg-color").value;
             const size = parseInt(document.getElementById("size-input").value);
             const border = parseInt(document.getElementById("border-input").value);
-            const signature = document.getElementById("signature-input").value;
 
             if (text.trim() === "") {
                 alert("Per favore, inserisci un testo o un URL per generare il QR Code.");
@@ -194,45 +190,13 @@
                 width: size,
                 height: size,
                 colorDark: fgColor,
-                colorLight: bgColor,
-                correctLevel: QRCode.CorrectLevel.H // Alto livello di correzione errore per la firma
+                colorLight: bgColor
             });
 
-            // Aggiunge la firma dopo che il QR è stato generato sul canvas
+            // Mostra il pulsante di download dopo che il QR è stato generato
             setTimeout(() => {
-                addSignatureToQR(signature, size, fgColor, bgColor);
                 document.getElementById("download-btn").style.display = "inline-block";
             }, 50); // Piccolo ritardo per assicurare che il canvas sia pronto
-        }
-
-        // Funzione per aggiungere la firma al canvas del QR Code
-        function addSignatureToQR(signatureText, qrSize, fgColor, bgColor) {
-            const canvas = document.querySelector("#qrcode canvas");
-            if (!canvas) return;
-
-            const ctx = canvas.getContext("2d");
-
-            if (signatureText) {
-                const fontSize = qrSize * 0.05; // Dimensione del font relativa alla dimensione del QR
-                ctx.font = `${fontSize}px Arial`;
-                ctx.textAlign = "center";
-                ctx.fillStyle = fgColor; // Colore del testo come il colore del QR
-
-                const textMetrics = ctx.measureText(signatureText);
-                const textWidth = textMetrics.width;
-
-                // Calcola la posizione per centrare la firma in basso
-                const x = qrSize / 2;
-                const y = qrSize - (fontSize / 2) - (qrSize * 0.02); // Poco sopra il bordo inferiore
-
-                // Disegna uno sfondo rettangolare per la firma (opzionale, migliora leggibilità)
-                const padding = 5;
-                ctx.fillStyle = bgColor; // Sfondo del testo come il colore di sfondo del QR
-                ctx.fillRect(x - textWidth / 2 - padding, y - fontSize - padding, textWidth + 2 * padding, fontSize + 2 * padding);
-                
-                ctx.fillStyle = fgColor; // Ritorna al colore del testo
-                ctx.fillText(signatureText, x, y);
-            }
         }
 
         // Funzione per scaricare il QR Code
