@@ -195,6 +195,39 @@
 
             // Mostra il pulsante di download dopo che il QR è stato generato
             setTimeout(() => {
+                const qrCanvas = document.querySelector("#qrcode canvas");
+                if (qrCanvas && border > 0) {
+                    const ctx = qrCanvas.getContext("2d");
+                    const currentSize = qrCanvas.width;
+                    
+                    // Calcolo approssimativo della dimensione del modulo
+                    // Il finder pattern in alto a sinistra è largo 7 moduli
+                    const data = ctx.getImageData(0, 0, currentSize, 1).data;
+                    let runLength = 0;
+                    const r = data[0], g = data[1], b = data[2];
+                    
+                    for (let i = 0; i < currentSize; i++) {
+                        if (data[i * 4] === r && data[i * 4 + 1] === g && data[i * 4 + 2] === b) {
+                            runLength++;
+                        } else {
+                            break;
+                        }
+                    }
+                    
+                    const moduleSize = runLength / 7;
+                    const borderPixels = Math.ceil(border * moduleSize);
+                    
+                    const newCanvas = document.createElement("canvas");
+                    newCanvas.width = currentSize + (borderPixels * 2);
+                    newCanvas.height = currentSize + (borderPixels * 2);
+                    const newCtx = newCanvas.getContext("2d");
+                    
+                    newCtx.fillStyle = bgColor;
+                    newCtx.fillRect(0, 0, newCanvas.width, newCanvas.height);
+                    newCtx.drawImage(qrCanvas, borderPixels, borderPixels);
+                    
+                    qrCanvas.parentNode.replaceChild(newCanvas, qrCanvas);
+                }
                 document.getElementById("download-btn").style.display = "inline-block";
             }, 50); // Piccolo ritardo per assicurare che il canvas sia pronto
         }
